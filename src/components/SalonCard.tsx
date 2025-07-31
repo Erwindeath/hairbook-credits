@@ -26,7 +26,7 @@ interface SalonCardProps {
             </span>
             <button
               onClick={(e) => {
-                e.stopPropagation(); // Evita abrir detalles al click en botón
+                e.stopPropagation();
                 onReserve(salon);
               }}
               className="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 transition"
