@@ -4,11 +4,13 @@ import { CreditDisplay } from "./components/CreditDisplay";
 import { FilterBar } from "./components/FilterBar";
 import { SalonCard } from "./components/SalonCard";
 import { SalonDetails } from "./components/SalonDetails";
-import { Alert } from "./components/Alerts.tsx";
+import { Alert } from "./components/Alerts";
 import { Pagination } from "./components/Pagination";
+import { CreditsProvider, useCredits } from "./context/CreditsContext";
 
-function App() {
-  const [credits, setCredits] = useState(20);
+function AppContent() {
+  const { credits, reserve } = useCredits();
+
   const [filterType, setFilterType] = useState("");
   const [filterLocation, setFilterLocation] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,15 +34,15 @@ function App() {
       return matchesType && matchesLocation && matchesSearch;
     });
   }, [filterType, filterLocation, searchTerm]);
+
   const totalPages = Math.ceil(filteredSalons.length / salonsPerPage);
   const paginatedSalons = filteredSalons.slice(
     (currentPage - 1) * salonsPerPage,
     currentPage * salonsPerPage
   );
 
-  function reserve(salon: Salon) {
-    if (credits >= salon.creditCost) {
-      setCredits((c) => c - salon.creditCost);
+  function handleReserve(salon: Salon) {
+    if (reserve(salon)) {
       setToastMessage(`Reserva exitosa en ${salon.name}!`);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
@@ -54,9 +56,9 @@ function App() {
   return (
     <div className="max-w-6xl mx-auto p-4 min-h-screen">
       <header className="flex justify-between items-center mb-6 flex-wrap gap-4">
-      <h1 className="text-2xl font-bold">
-        HairBook - Créditos: <CreditDisplay credits={credits} />
-      </h1>
+        <h1 className="text-2xl font-bold">
+          HairBook - Créditos: <CreditDisplay credits={credits} />
+        </h1>
         <FilterBar
           filterType={filterType}
           setFilterType={setFilterType}
@@ -76,10 +78,9 @@ function App() {
               <SalonCard
                 key={salon.id}
                 salon={salon}
-                onReserve={reserve}
-                onDetails={setSelectedSalon}
+                onReserve={handleReserve}
+                onDetails={() => setSelectedSalon(salon)}
               />
-              
             ))}
           </div>
         )}
@@ -88,13 +89,21 @@ function App() {
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
-        onPageChange={(p) => setCurrentPage(p)}
+        onPageChange={setCurrentPage}
       />
 
       <SalonDetails salon={selectedSalon} onClose={() => setSelectedSalon(null)} />
 
       <Alert message={toastMessage} show={showToast} />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <CreditsProvider>
+      <AppContent />
+    </CreditsProvider>
   );
 }
 

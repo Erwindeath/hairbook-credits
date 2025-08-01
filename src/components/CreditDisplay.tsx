@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 
 interface CreditDisplayProps {
@@ -5,21 +6,31 @@ interface CreditDisplayProps {
 }
 
 export function CreditDisplay({ credits }: CreditDisplayProps) {
-  const [animating, setAnimating] = useState(false);
+  const [display, setDisplay] = useState(credits);
+  const [flash, setFlash] = useState(false);
 
   useEffect(() => {
-    setAnimating(true);
-    const timer = setTimeout(() => setAnimating(false), 500);
-    return () => clearTimeout(timer);
+    if (credits < display) {
+      setFlash(true);
+      const timeout = setTimeout(() => setFlash(false), 500);
+      setDisplay(credits);
+      return () => clearTimeout(timeout);
+    } else {
+      setDisplay(credits);
+    }
   }, [credits]);
 
   return (
-    <span
-      className={`text-purple-600 font-bold transition-all duration-500 ${
-        animating ? "scale-125 text-red-500" : "scale-100 text-purple-600"
-      }`}
-    >
-      {credits}
-    </span>
+    <AnimatePresence>
+      <motion.span
+        key={display}
+        initial={{ scale: 1 }}
+        animate={{ scale: flash ? 1.3 : 1, color: flash ? "#9333EA" : "#6B21A8" }}
+        transition={{ duration: 0.3 }}
+        className="font-mono"
+      >
+        {display}
+      </motion.span>
+    </AnimatePresence>
   );
 }
